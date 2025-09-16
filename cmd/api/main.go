@@ -17,15 +17,23 @@ func main() {
 	conf := config.Get()
 
 	database.ConnectDB(conf.Database)
-	database.DB.AutoMigrate(&model.User{})
+	database.DB.AutoMigrate(&model.User{}, &model.Post{})
 
+	// Repository
 	userRepository := repository.NewUserRepository(database.DB)
+	postRepository := repository.NewPostRepository(database.DB)
+
+	// Service
 	userService := service.NewUserService(userRepository)
-	userHandler := handler.NewUserHandler(*userService)
+	postService := service.NewPostService(postRepository)
+
+	// Handler
+	userHandler := handler.NewUserHandler(userService)
+	postHandler := handler.NewPostHandler(postService)
 
 	routes.SetupUserRoutes(app, userHandler)
+	routes.SetupPostRoutes(app, postHandler)
 
-	app.Use()
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})

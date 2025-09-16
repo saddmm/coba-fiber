@@ -16,3 +16,11 @@ func NewUserService(userRepository repository.UserRepository) *UserService {
 func (s *UserService) CreateUser(user *model.User) error {
 	return s.userRepository.Create(user)
 }
+
+func (s *UserService) GetUser() ([]*model.User, error) {
+	users, err := s.userRepository.FindAll()
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
