@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/saddmm/coba-fiber/internal/handler"
-	"github.com/saddmm/coba-fiber/internal/model"
 	"github.com/saddmm/coba-fiber/internal/repository"
 	"github.com/saddmm/coba-fiber/internal/routes"
 	"github.com/saddmm/coba-fiber/internal/service"
@@ -17,7 +16,6 @@ func main() {
 	conf := config.Get()
 
 	database.ConnectDB(conf.Database)
-	database.DB.AutoMigrate(&model.User{}, &model.Post{})
 
 	// Repository
 	userRepository := repository.NewUserRepository(database.DB)
@@ -26,9 +24,10 @@ func main() {
 	// Service
 	userService := service.NewUserService(userRepository)
 	postService := service.NewPostService(postRepository)
+	authService := service.NewAuthService(userRepository)
 
 	// Handler
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := handler.NewUserHandler(userService, authService)
 	postHandler := handler.NewPostHandler(postService)
 
 	routes.SetupUserRoutes(app, userHandler)

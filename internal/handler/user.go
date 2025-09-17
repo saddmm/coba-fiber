@@ -5,28 +5,34 @@ import (
 	"github.com/saddmm/coba-fiber/internal/dto"
 	"github.com/saddmm/coba-fiber/internal/model"
 	"github.com/saddmm/coba-fiber/internal/service"
+	"github.com/saddmm/coba-fiber/pkg/helper"
 )
 
 type UserHandler struct {
 	userService *service.UserService
+	authService  *service.AuthService
 }
 
-func NewUserHandler(userService *service.UserService) *UserHandler {
-	return &UserHandler{userService}
+func NewUserHandler(userService *service.UserService, authService *service.AuthService) *UserHandler {
+	return &UserHandler{userService, authService}
 }
 
-func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
-	input := c.Locals("validateDTO").(*dto.CreateUserDto)
+func (h *UserHandler) Register(c *fiber.Ctx) error {
+	input := c.Locals("validateDTO").(*dto.RegisterDto)
 
 	user := model.User{
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: input.Password,
 	}
-	if err := h.userService.CreateUser(&user); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	
+	if err := h.authService.Register(&user); err != nil {
+		if err.Error() == "email already exists" {
+			return helper.ErrorResponse(c, fiber.StatusConflict, err.Error())
+		}
+		return helper.ErrorResponse(c, fiber.StatusInternalServerError, err.Error())
 	}
-	return c.Status(fiber.StatusCreated).JSON(user)
+	return helper.SuccessResponse(c, fiber.StatusCreated, "User registered successfully", user)
 }
 
 func (h *UserHandler) GetUser(c *fiber.Ctx) error {
