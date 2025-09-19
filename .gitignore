@@ -1,1 +1,40 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*_test
+
+# Output of 'go build'
+# For example, a directory named 'bin' containing compiled executables
+bin/
+
+# Dependency directories (golang.org/x/...)
+# These are typically handled by Go modules and should not be committed
+vendor/
+
+# Go module cache
+# This directory stores downloaded modules and their versions
+pkg/mod/
+
+# Editor/IDE specific files
+.idea/
+.vscode/
+*.swp
+*.bak
+*~
+
+# Operating System generated files
+.DS_Store
+Thumbs.db
+
+# Environment variables file
 .env
+
+# Log files
+*.log
+
+# Build cache
+.cache/
