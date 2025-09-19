@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/saddmm/coba-fiber/internal/handler"
 	"github.com/saddmm/coba-fiber/internal/repository"
@@ -15,11 +17,14 @@ func main() {
 
 	conf := config.Get()
 
-	database.ConnectDB(conf.Database)
+	db, err := database.ConnectDB(conf.Database)
+	if err != nil {
+		log.Fatalf("Gagal terhubung ke database: %v", err)
+	}
 
 	// Repository
-	userRepository := repository.NewUserRepository(database.DB)
-	postRepository := repository.NewPostRepository(database.DB)
+	userRepository := repository.NewUserRepository(db)
+	postRepository := repository.NewPostRepository(db)
 
 	// Service
 	userService := service.NewUserService(userRepository)
@@ -28,7 +33,7 @@ func main() {
 
 	// Handler
 	userHandler := handler.NewUserHandler(userService, authService)
-	postHandler := handler.NewPostHandler(postService)
+	postHandler := handler.NewPostHandler(postService, userService)
 
 	routes.SetupUserRoutes(app, userHandler)
 	routes.SetupPostRoutes(app, postHandler)

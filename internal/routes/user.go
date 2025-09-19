@@ -10,5 +10,8 @@ import (
 func SetupUserRoutes(router fiber.Router, userHandler *handler.UserHandler) {
 	userRoutes := router.Group("/users")
 
-	userRoutes.Post("/", middleware.ValidateDto(dto.RegisterDto{}), userHandler.Register)
+	userRoutes.Post("/register", middleware.ValidateDto(dto.RegisterDto{}), middleware.Protected(), userHandler.Register)
+	userRoutes.Post("/login", middleware.ValidateDto(dto.LoginDto{}), userHandler.Login)
+	userRoutes.Get("/profile", middleware.Protected(), userHandler.GetProfile)
+	userRoutes.Get("/", userHandler.GetUser)
 }
