@@ -6,7 +6,7 @@ import (
 )
 
 type PostRepository interface {
-	CreatePost(post *model.Post) error
+	CreatePost(userId uint, post *model.Post) error
 	GetPostByID(id uint) (*model.Post, error)
 	GetAllPosts() ([]model.Post, error)
 	UpdatePost(post *model.Post) error
@@ -22,7 +22,8 @@ func NewPostRepository(db *gorm.DB) PostRepository {
 }
 
 // CreatePost implements PostRepository.
-func (p *postRepository) CreatePost(post *model.Post) error {
+func (p *postRepository) CreatePost(userId uint, post *model.Post) error {
+	post.UserID = userId
 	return p.db.Create(&post).Error
 }
 

@@ -28,14 +28,14 @@ func (s *AuthService) Register(user *model.User) error {
 func (s *AuthService) Login(email, password string) (string, error) {
 	user, err := s.userRepository.FindByEmail(email)
 	if err != nil {
-		return "", errors.New("user not found")
+		return "", err
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return "", errors.New("password is incorrect")
 	}
 
-	token, err := helper.GenerateToken(user)
+	token, err := helper.GenerateJWT(user.ID)
 	if err != nil {
 		return "", err
 	}
