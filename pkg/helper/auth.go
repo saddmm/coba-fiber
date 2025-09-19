@@ -4,10 +4,14 @@ import (
 	"os"
 	"time"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/saddmm/coba-fiber/internal/model"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type TokenClaims struct {
+	UserID uint `json:"user_id"`
+	Name string `json:"name"`
+	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
 
@@ -19,13 +23,18 @@ func HashPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
-func GenerateJWT(id uint) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": id,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+func GenerateToken(user *model.User) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, TokenClaims{
+		UserID: user.ID,
+		Name:   user.Name,
+		Email:  user.Email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
 	})
 
-	tokenString, err := token.SignedString(os.Getenv("JWT_SECRET"))
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return "", err
 	}
@@ -33,7 +42,7 @@ func GenerateJWT(id uint) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(tokenString string) (uint, error) {
+func VerifyToken(tokenString string) (bool, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrTokenMalformed
@@ -42,6 +51,8 @@ func VerifyToken(tokenString string) (uint, error) {
 	})
 
 	if err != nil {
-		return 0, err
+		return false, err
 	}
+
+	return token.Valid, nil
 }
